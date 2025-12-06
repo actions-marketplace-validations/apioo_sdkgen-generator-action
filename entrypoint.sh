@@ -1,13 +1,32 @@
 #!/bin/sh -l
-if [ $GITHUB_REF_TYPE == 'tag' ]
-then
-  echo 'Skip generation for tag'
-  exit
-fi
-/usr/local/bin/sdkgen install --client-id=\"$1\" --client-secret=\"$2\" --remove
 git config --global user.name "SDKgen-Bot";
 git config --global user.email "bot@sdkgen.app";
 git config --global --add safe.directory /github/workspace
-git add "$2"
-git commit -m "Update code generation"
+
+if [ ! -z "$TYPEHUB_VERSION" ]
+then
+  echo "Creating tag $TYPEHUB_VERSION ..."
+  git tag -a "v$TYPEHUB_VERSION" -m "$TYPEHUB_CHANGELOG"
+  git push https://$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git "v$TYPEHUB_VERSION"
+  exit
+fi
+
+git symbolic-ref -q HEAD
+if [ $? -eq 1 ]
+then
+  echo "Git is in detached HEAD mode skip ..."
+  exit
+fi
+
+echo "Generate code  ..."
+
+/usr/local/bin/sdkgen update --remove
+
+if [ -z "$TYPEHUB_MESSAGE" ]
+then
+  TYPEHUB_MESSAGE="Update code generation"
+fi
+
+git add -A
+git commit -m "$TYPEHUB_MESSAGE"
 git push https://$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git

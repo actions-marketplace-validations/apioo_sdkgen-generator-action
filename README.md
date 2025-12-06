@@ -18,8 +18,18 @@ secret you need to register an account at [sdkgen.app](https://sdkgen.app/).
 ## Example usage
 
 ```yaml
-uses: apioo/sdkgen-generator-action@v1
-with:
-  client_id: '${{ secrets.SDKGEN_CLIENT_ID }}'
-  client_secret: '${{ secrets.SDKGEN_CLIENT_SECRET }}'
+name: SDKgen
+on:
+  - workflow_dispatch
+permissions:
+  contents: 'write'
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: apioo/sdkgen-generator-action@v0.3
+        with:
+          client_id: '${{ secrets.SDKGEN_CLIENT_ID }}'
+          client_secret: '${{ secrets.SDKGEN_CLIENT_SECRET }}'
 ```
